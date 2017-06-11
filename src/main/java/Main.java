@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.*;
 
@@ -10,9 +11,9 @@ public class Main {
     public static void main(String[] args) {
 
         final UI ui = new UI();
-        ui.setLiam(new Vector(100, 100));
+        ui.liam = new Vector(0, -100);
 
-        new java.util.Timer().scheduleAtFixedRate(
+        new Timer().scheduleAtFixedRate(
             new TimerTask() {
                 @Override
                 public void run() {
@@ -20,9 +21,19 @@ public class Main {
                 }
             },
             0,
-            500
+            1000 / 60 // 60 fps
         );
-        ui.repaint();
+
+        new Timer().scheduleAtFixedRate(
+            new TimerTask() {
+                @Override
+                public void run() {
+                    ui.liam = new Transform(ui.liam).rotate(-Math.PI / 30);
+                }
+            },
+            0,
+            1000
+        );
 
         final JFrame frame = new JFrame("canvas");
         frame.setSize(WIDTH, HEIGHT);
@@ -33,11 +44,7 @@ public class Main {
 }
 
 class UI extends JPanel {
-    private Vector liam;
-
-    public void setLiam(final Vector liam) {
-        this.liam = liam;
-    }
+    public Vector liam;
 
     @Override
     public void paintComponent(final Graphics g) {
@@ -50,10 +57,20 @@ class UI extends JPanel {
         final Vector origin = new Vector(dimensions.x / 2, dimensions.y / 2);
 
         // x axis
-        g2.drawLine(0, origin.y, dimensions.x, origin.y);
+        g2.drawLine(
+            0,
+            (int) origin.y,
+            (int) dimensions.x,
+            (int) origin.y
+        );
 
         // y axis
-        g2.drawLine(origin.x, 0, origin.x, dimensions.y);
+        g2.drawLine(
+            (int) origin.x,
+            0,
+            (int) origin.x,
+            (int) dimensions.y
+        );
 
         // liam
         if (liam == null) {
@@ -62,15 +79,20 @@ class UI extends JPanel {
 
         g.setColor(Color.RED);
         final Vector liamDestination = origin.add(liam);
-        g.drawLine(origin.x, origin.y, liamDestination.x, liamDestination.y);
+        g.drawLine(
+            (int) origin.x,
+            (int) origin.y,
+            (int) liamDestination.x,
+            (int) liamDestination.y
+        );
     }
 }
 
 class Vector {
-    public final int x;
-    public final int y;
+    public final double x;
+    public final double y;
 
-    public Vector(final int x, final int y) {
+    public Vector(final double x, final double y) {
         this.x = x;
         this.y = y;
     }
@@ -85,5 +107,49 @@ class Vector {
             "x=" + x +
             ", y=" + y +
             '}';
+    }
+}
+
+class Matrix {
+    public final double x1;
+    public final double x2;
+    public final double y1;
+    public final double y2;
+
+    public Matrix(
+        final double x1,
+        final double y1,
+        final double x2,
+        final double y2
+    ) {
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+    }
+
+    public Vector multiply(final Vector vector) {
+        return new Vector(
+            x1 * vector.x + y1 * vector.y,
+            x2 * vector.x + y2 * vector.y
+        );
+    }
+}
+
+class Transform {
+    private final Vector vector;
+
+    public Transform(final Vector vector) {
+        this.vector = vector;
+    }
+
+    public Vector rotate(final double angle) {
+        return new Matrix(
+            Math.cos(angle),
+            Math.sin(angle),
+            -Math.sin(angle),
+            Math.cos(angle)
+        )
+            .multiply(vector);
     }
 }
