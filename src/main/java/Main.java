@@ -81,7 +81,12 @@ class UI extends JPanel {
             return;
         }
 
-        g.setColor(Color.RED);
+        g.setColor(new Color(
+            (int) (Math.abs(Math.cos(liam.angle()) * 255)),
+            (int) Math.abs((Math.sin(liam.angle()) * 255)),
+            (int) Math.abs((Math.sin(liam.angle()) * Math.cos(liam.angle()) * 255))
+        ));
+
         final Vector liamDestination = origin.add(liam);
         g.drawLine(
             (int) origin.x,
