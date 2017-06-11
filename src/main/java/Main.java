@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) {
 
         final UI ui = new UI();
-        ui.liam = new Vector(0, -100);
+        ui.liam = new Vector(100, 0);
 
         new Timer().scheduleAtFixedRate(
             new TimerTask() {
@@ -28,11 +28,15 @@ public class Main {
             new TimerTask() {
                 @Override
                 public void run() {
-                    ui.liam = new Transform(ui.liam).rotate(-Math.PI / 30);
+                    final Vector rotated = new Transform(ui.liam).rotate(-Math.PI / 100);
+                    ui.liam = rotated.add(
+                        new Transform(new Vector(Math.cos(rotated.angle()), Math.sin(rotated.angle())))
+                            .scale(2)
+                    );
                 }
             },
             0,
-            1000
+            100
         );
 
         final JFrame frame = new JFrame("canvas");
@@ -97,8 +101,20 @@ class Vector {
         this.y = y;
     }
 
+    public Vector(final Vector other) {
+        this(other.x, other.y);
+    }
+
     public Vector add(final Vector other) {
         return new Vector(this.x + other.x, this.y + other.y);
+    }
+
+    public double angle() {
+        return Math.atan(y / x);
+    }
+
+    public double length() {
+        return Math.pow(Math.sqrt(x + y), 2);
     }
 
     @Override
@@ -149,6 +165,16 @@ class Transform {
             Math.sin(angle),
             -Math.sin(angle),
             Math.cos(angle)
+        )
+            .multiply(vector);
+    }
+
+    public Vector scale(final double factor) {
+        return new Matrix(
+            factor,
+            0,
+            0,
+            factor
         )
             .multiply(vector);
     }
