@@ -1,6 +1,9 @@
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 import javax.swing.*;
 
 public class Main {
@@ -11,7 +14,11 @@ public class Main {
     public static void main(String[] args) {
 
         final UI ui = new UI();
-        ui.liam = new Vector(100, 0);
+        ui.liams = Arrays.asList(
+            new Vector(100, 0),
+            new Vector(100, 100),
+            new Vector(0, 100)
+        );
 
         new Timer().scheduleAtFixedRate(
             new TimerTask() {
@@ -28,11 +35,15 @@ public class Main {
             new TimerTask() {
                 @Override
                 public void run() {
-                    final Vector rotated = new Transform(ui.liam).rotate(-Math.PI / 100);
-                    ui.liam = rotated.add(
-                        new Transform(new Vector(Math.cos(rotated.angle()), Math.sin(rotated.angle())))
-                            .scale(2)
-                    );
+                    ui.liams = ui.liams.stream()
+                    .map(liam -> {
+                        final Vector rotated = new Transform(liam).rotate(-Math.PI / 100);
+                        return rotated.add(
+                            new Transform(new Vector(Math.cos(rotated.angle()), Math.sin(rotated.angle())))
+                                .scale(2)
+                        );
+                    })
+                    .collect(Collectors.toList());
                 }
             },
             0,
@@ -48,7 +59,7 @@ public class Main {
 }
 
 class UI extends JPanel {
-    public Vector liam;
+    public List<Vector> liams;
 
     @Override
     public void paintComponent(final Graphics g) {
@@ -77,23 +88,25 @@ class UI extends JPanel {
         );
 
         // liam
-        if (liam == null) {
+        if (liams == null) {
             return;
         }
 
-        g.setColor(new Color(
-            (int) (Math.abs(Math.cos(liam.angle()) * 255)),
-            (int) Math.abs((Math.sin(liam.angle()) * 255)),
-            (int) Math.abs((Math.sin(liam.angle()) * Math.cos(liam.angle()) * 255))
-        ));
+        liams.forEach(liam -> {
+            g.setColor(new Color(
+                (int) (Math.abs(Math.cos(liam.angle()) * 255)),
+                (int) Math.abs((Math.sin(liam.angle()) * 255)),
+                (int) Math.abs((Math.sin(liam.angle()) * Math.cos(liam.angle()) * 255))
+            ));
 
-        final Vector liamDestination = origin.add(liam);
-        g.drawLine(
-            (int) origin.x,
-            (int) origin.y,
-            (int) liamDestination.x,
-            (int) liamDestination.y
-        );
+            final Vector liamDestination = origin.add(liam);
+            g.drawLine(
+                (int) origin.x,
+                (int) origin.y,
+                (int) liamDestination.x,
+                (int) liamDestination.y
+            );
+        });
     }
 }
 
