@@ -1,8 +1,9 @@
 import java.awt.*;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.swing.*;
 
@@ -14,10 +15,27 @@ public class Main {
     public static void main(String[] args) {
 
         final UI ui = new UI();
-        ui.liams = Arrays.asList(
-            new Vector(100, 0),
-            new Vector(100, 100),
-            new Vector(0, 100)
+
+        final Timer creationTimer = new Timer();
+        creationTimer.scheduleAtFixedRate(
+            new TimerTask() {
+                @Override
+                public void run() {
+                    ui.liams.add(new Vector(0, 100));
+                }
+            },
+            TimeUnit.SECONDS.toMillis(0),
+            200
+        );
+
+        new Timer().schedule(
+            new TimerTask() {
+                @Override
+                public void run() {
+                    creationTimer.cancel();
+                }
+            },
+            TimeUnit.SECONDS.toMillis(20)
         );
 
         new Timer().scheduleAtFixedRate(
@@ -40,7 +58,7 @@ public class Main {
                         final Vector rotated = new Transform(liam).rotate(-Math.PI / 100);
                         return rotated.add(
                             new Transform(new Vector(Math.cos(rotated.angle()), Math.sin(rotated.angle())))
-                                .scale(2)
+                                .scale(1)
                         );
                     })
                     .collect(Collectors.toList());
@@ -59,7 +77,7 @@ public class Main {
 }
 
 class UI extends JPanel {
-    public List<Vector> liams;
+    public List<Vector> liams = new ArrayList<>();
 
     @Override
     public void paintComponent(final Graphics g) {
