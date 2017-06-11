@@ -50,7 +50,7 @@ public class Main {
             100
         );
 
-        final JFrame frame = new JFrame("canvas");
+        final JFrame frame = new JFrame("not a cardioid");
         frame.setSize(WIDTH, HEIGHT);
         frame.setContentPane(ui);
         frame.setVisible(true);
